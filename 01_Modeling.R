@@ -67,6 +67,8 @@ table(df.all$user_name, classe, useNA = 'ifany')
 
 
 #' ### Isolate and remove the almost-never-populated features
+#'   * There are a chunk of features that are so-seldom populated as to provide no information
+#'   * Neither are they populated on the testing data, so they are extra worthless
 pct.na <- df.all %>%
   sapply(. %>% is.na() %>% mean()) %T>%
   {sort(.) %>% dotchart()} %T>%
@@ -74,19 +76,17 @@ pct.na <- df.all %>%
 
 df.all %<>% '['(pct.na < 0.8)
 
-#' ### Do a simple RandomForest fit
+#' ### Do a simple RandomForest fit to understand modeling space
 myfit <- rfsrc(
   classe~.
   ,data=data.frame(classe,df.all)[ind.train,]
-  ,ntree=50
-  ,do.trace=TRUE
-  ,nsplit=12
+  ,ntree=50 ## Keep the number of trees small here
+  ,nsplit=12 ## No need to exhaustively search for splits with this much data
   )
-
 print(myfit)
 plot(myfit)
-
 predict(myfit,newdata=df.all[!ind.train,])$class
+
 
 #' ### Session information
 sessionInfo()
